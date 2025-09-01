@@ -2,11 +2,6 @@
 
 ### Workflow
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px', 'fontFamily': 'arial' }}}%%
-graph TD
-    %% Konfiguration für gerade/eckige Linien
-    linkStyle default orthogonal
-
     %% S1-Subgraph
     subgraph Sentinel-1["Sentinel-1"]
         direction TD
