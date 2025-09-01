@@ -3,7 +3,7 @@
 ### Workflow
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px', 'fontFamily': 'arial' }}}%%
-graph LR
+graph TD
     %% Konfiguration für gerade/eckige Linien
     linkStyle default orthogonal
 
