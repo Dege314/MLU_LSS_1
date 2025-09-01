@@ -7,20 +7,23 @@ graph TD
     %% Konfiguration für gerade/eckige Linien
     linkStyle default orthogonal
 
-    %% Historische Daten Subgraph
-    subgraph historisch["Historisch"]
-        direction LR
-        DWD["DWD 1961-2020"] --> F1["Filter<br>(keine Datenlücken)"]
-        F1 --> P1["Räumlichen Bezug<br>erstellen"]
+    %% S1-Subgraph
+    subgraph Sentinel-1["Sentinel-1"]
+        direction TD
+        OAF["Apply-Orbit-File"] --> TNR["Thermal-Noise-Removal"]
+        TNR --> BNR["Border-Noise-Removal"]
+        BNR --> Cal["Calibration-Sigma-Nought"]
+        Cal --> SPK["Speckle-Filter"]
+        SPK --> TCR["Terrain-Correction"]
+        TCR --> LDB["Linear-DB"]
+        LDB --> SUB["Subset"]
     end
 
-    %% Projektionen Subgraph
-    subgraph projektionen["Projektionen"]
+    %% Sentinel-2 Subgraph
+    subgraph Sentinel-2["Sentinel-2"]
         direction TB
-        REMO["REMO2009 2011-2060"] --> N2R["NetCDF → Raster<br>• Flip<br>• Projizieren<br>• Maskieren"]
-        N2R --> PEX["Punkte extrahieren"]
-        PEX --> DIF["Differenz Historisch &<br>Projektion 2011-2020"]
-        DIF --> PRJ["Projektion anpassen"]
+        SUB["Subset"] --> CLM["Cloud-Masking"]
+        CLM --> MSC["Mosaic"]
     end
 
     %% Analyse Subgraph
