@@ -3,7 +3,7 @@
 ## Workflow
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px', 'fontFamily': 'arial' }, 'flowchart': { 'nodeSpacing': 7,'rankSpacing': 20 }}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px', 'fontFamily': 'arial' }, 'flowchart': { 'nodeSpacing': 7,'rankSpacing': 15 }}}%%
 flowchart TD
     %% Konfiguration für gerade/eckige Linien
     linkStyle default orthogonal
