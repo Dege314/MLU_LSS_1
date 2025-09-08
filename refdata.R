@@ -1,4 +1,4 @@
-packages <- c("terra", "tidyr", "dplyr", "openxlsx")
+packages <- c("terra", "tidyr", "dplyr", "openxlsx", "sf")
 for (pkg in packages) {
   if (!require(pkg, character.only = TRUE)) {
     install.packages(pkg)  # Paket installieren
@@ -8,7 +8,7 @@ for (pkg in packages) {
 ref_data <- terra::vect("data/ref_data.gpkg")
 dates <- unique(ref_data$date)
 classes <- unique(ref_data$class)
-
+crs(ref_data)
 # count number of points per date and class
 counts <- data.frame(date = character(), class = character(), count = integer())
 for (date in dates) {
@@ -44,4 +44,36 @@ WKT <- paste0("POLYGON((",
            e[2], " ", e[4], ", ",
            e[2], " ", e[3], ", ",
            e[1], " ", e[3], "))")
-writeLines(WKT, "data/tables/ref_data_extent.wkt")
+writeLines(WKT, "data/tables/ref_data_extent_epsg4326.wkt")
+
+poly <- as.polygons(e, crs = crs(ref_data))
+
+# Buffer hinzufügen
+poly_buffered <- buffer(poly, 30)
+
+#extent erzeugen
+e_buff <- ext(poly_buffered)
+
+# WKT ausgeben
+WKT_buffered <- paste0("POLYGON((",
+                       e_buff[1], " ", e_buff[3], ", ",
+                       e_buff[1], " ", e_buff[4], ", ",
+                       e_buff[2], " ", e_buff[4], ", ",
+                       e_buff[2], " ", e_buff[3], ", ",
+                       e_buff[1], " ", e_buff[3], "))")
+
+writeLines(WKT_buffered, "data/tables/ref_data_extent_epsg4326_buff30m.wkt")
+
+# WKT für EPSG 32632
+poly_buffered_32632 <- st_transform(st_as_sf(poly_buffered), crs = 32632)
+
+e_buff <- ext(poly_buffered_32632)
+
+WKT_buffered_32632 <- paste0("POLYGON((",
+                       e_buff[1], " ", e_buff[3], ", ",
+                       e_buff[1], " ", e_buff[4], ", ",
+                       e_buff[2], " ", e_buff[4], ", ",
+                       e_buff[2], " ", e_buff[3], ", ",
+                       e_buff[1], " ", e_buff[3], "))")
+
+writeLines(WKT_buffered_32632, "data/tables/ref_data_extent_epsg32632_buff30m.wkt")
