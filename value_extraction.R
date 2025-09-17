@@ -70,3 +70,14 @@ soiltypes_aggr <- merge(soiltypes_aggr, count, by = "BODTYP_K", all.x = TRUE)
 write.csv(soiltypes_aggr, "data/tables/soiltypes_aggregated.csv", row.names = FALSE)
 
 View(as.data.frame(extracted_values))
+
+
+  values <- terra::extract(rast(S1_files[1]), ref_data[ref_data$date == "2018-04", ], na.rm = TRUE, bind = TRUE)
+  df <- as.data.frame(values)
+
+View(df)
+
+hist(as.vector(rast(S1_files[1]), "VH"), breaks = 100)
+plot(rast(S1_files[1]), "VH_mean")
+plot(quantized)
+plot(rast)

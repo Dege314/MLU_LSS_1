@@ -152,8 +152,9 @@ cat(sprintf("Total processing time: %s\n", difftime(end_time, start_time, units 
 
 str(S1_dates)
 str(current_date)
-window_size <- 3
 # Struktur / texturmerkmale berechnen
+window_size <- 3
+n_levels <- 128
 tif_files <- list.files("Data/S1/pro/mosaic/mean/", pattern = "\\.tif$", full.names = TRUE)
 #tif_files <- tif_files[1]
 sub_start_time <- Sys.time()
@@ -167,12 +168,30 @@ for (tif_file in seq_along(tif_files)) {
   n_layer <- dim(rast)[3]
   # calculate glcm for each layer
   for (layer in 1:n_layer) { # jeder Layer einzeln (VH,VV)
+    cat(sprintf("\rCalculating texture-parameters for file %d of %d and Layer %d of %d", tif_file, length(tif_files), layer, n_layer))
     layer <- rast[[layer]]
     band_name <- names(layer)
     mat <- as.matrix(layer, wide = TRUE)
     mat_clean <- mat
-    mat_clean[is.na(mat_clean)] <- -999
-    glcm_raster <- glcm::glcm(mat_clean, window = c(window_size, window_size), na_opt = "any", na_val = NA)
+    #mat_clean[is.na(mat_clean)] <- -999
+    min_val <- quantile(mat_clean, probs = 0.05, na.rm = TRUE)
+    max_val <- quantile(mat_clean, probs = 0.95, na.rm = TRUE)
+
+    # Werte unter min_val auf min_val setzen, Werte über max_val auf max_val
+    mat_clipped <- pmin(pmax(mat_clean, min_val), max_val)
+
+    # Quantisierung auf n_levels (z.B. 32) diskrete Werte
+    quantized <- matrix(as.integer((mat_clipped - min_val) / (max_val - min_val) * (n_levels - 1)),
+                        nrow = nrow(mat), ncol = ncol(mat))
+    quantized[is.na(quantized)] <- -999
+    # GLCM berechnen
+    glcm_raster <- glcm::glcm(quantized,
+                              window = c(window_size, window_size),
+                              n_grey = n_levels,
+                              na_opt = "any",
+                              na_val = NA,
+                              shift = list(c(1, 1), c(1, -1))
+    )
     glcm_names <- dimnames(glcm_raster)[[3]]
     n_glcm <- dim(glcm_raster)[3]
     # umwandeln in spatraster, maskieren und dem original raster hinzufügen
@@ -198,62 +217,90 @@ for (tif_file in seq_along(tif_files)) {
     }
   }
   writeRaster(rast,
-              filename = paste0("Data/S1/pro/mosaic/mean/texture/", substr(basename(tif_files[tif_file]), 1, 25), ".tif"),
+              filename = paste0("Data/S1/pro/mosaic/mean/texture/", substr(basename(tif_files[tif_file]), 1, 25), "_x", window_size, ".tif"),
               overwrite = TRUE)
   if (tif_file == length(tif_files)) {
     sub_end_time <- Sys.time()
-    cat(sprintf("\rTexture calculation finished! Total processing time for subset: %s\n", difftime(sub_end_time, sub_start_time, units = "mins")))
+    cat(sprintf("\rTexture calculation finished! Total processing time: %s\n", difftime(sub_end_time, sub_start_time, units = "mins")))
   }
 }
-
+str(quantized)
+unique(as.vector(quantized))
+hist(as.vector(quantized), breaks = 64)
+str(mat)
+str(mat_clean)
+str(mat_clipped)
+unique(quantized)
 names(rast_new)
 str(glcm_raster)
 library(terra)
 library(glcm)
 library(parallel)
-
+plot(glcm_raster)
+str(glcm_raster)
 tif_files <- list.files("Data/S1/pro/mosaic/mean/", pattern = "\\.tif$", full.names = TRUE)
+tif_files <- tif_files[1:2] # for testing
+n_levels <- 64
+window_size <- 5
 
-process_file <- function(tif_file, window_size) {
-  rast <- rast(tif_file)
-
-  mask <- rast[[1]] # beliebiges band
-  values(mask) <- ifelse(is.na(values(rast[[1]])), 1, NA)
-  mask_buff <- terra::buffer(mask, width = window_size * 5) # window_size * 5 da fenstergröße in pixel und buffer in metern
-
+texture_cal <- function(tif_file, window_size = 3, n_levels = 128) {
+  rast <- terra::rast(tif_file)
+  mask <- rast[[1]]
+  terra::values(mask) <- ifelse(is.na(terra::values(rast[[1]])), 1, NA)
+  mask_buff <- terra::buffer(mask, width = window_size * 5)
   n_layer <- dim(rast)[3]
-
   for (layer in 1:n_layer) {
-    band <- rast[[layer]]
-    band_name <- names(band)
-    mat <- as.matrix(band, wide = TRUE)
-    mat[is.na(mat)] <- -999
-
-    glcm_raster <- glcm::glcm(mat, window = c(window_size, window_size), na_opt = "any", na_val = NA)
-
+    layer_rast <- rast[[layer]]
+    band_name <- names(layer_rast)
+    mat <- as.matrix(layer_rast, wide = TRUE)
+    min_val <- quantile(mat, probs = 0.05, na.rm = TRUE)
+    max_val <- quantile(mat, probs = 0.95, na.rm = TRUE)
+    mat_clipped <- pmin(pmax(mat, min_val), max_val)
+    quantized <- matrix(as.integer((mat_clipped - min_val) / (max_val - min_val) * (n_levels - 1)),
+                        nrow = nrow(mat), ncol = ncol(mat))
+    quantized[is.na(quantized)] <- -999
+    glcm_raster <- glcm::glcm(quantized,
+                              window = c(window_size, window_size),
+                              n_grey = n_levels,
+                              na_opt = "any",
+                              na_val = NA,
+                              shift = list(c(1, 1), c(1, -1)))
     glcm_names <- dimnames(glcm_raster)[[3]]
     n_glcm <- dim(glcm_raster)[3]
-    
     for (layer_glcm in 1:n_glcm) {
       mat_layer <- glcm_raster[, , layer_glcm]
       rast_new <- rast(nrows = nrow(rast), ncols = ncol(rast),
                        xmin = xmin(rast), xmax = xmax(rast),
                        ymin = ymin(rast), ymax = ymax(rast),
                        crs = crs(rast))
-      values(rast_new) <- as.vector(t(mat_layer))
-
+      terra::values(rast_new) <- as.vector(t(mat_layer))
       masked <- terra::mask(rast_new, mask_buff, maskvalues = 1, updatevalue = NA)
-
       names(masked) <- paste0(band_name, substr(glcm_names[layer_glcm], 5, nchar(glcm_names[layer_glcm])))
-
       rast <- c(rast, masked)
     }
   }
-  out <- file.path("Data/S1/pro/mosaic/mean/texture",
-                   paste0(substr(basename(tif_file), 1, 25), ".tif"))
-  writeRaster(rast, out, overwrite = TRUE)
+  out_file <- file.path("Data/S1/pro/mosaic/mean/texture/",
+                        paste0(substr(basename(tif_file), 1, 25), "_x", window_size, ".tif"))
+  writeRaster(rast, filename = out_file, overwrite = TRUE)
 }
+
+cl <- parallel::makeCluster(2) # oder beliebig viele Kerne
+result_files <- pblapply(tif_files, texture_cal, 
+                         window_size = 3, n_levels = 128, cl = cl)
+parallel::stopCluster(cl)
+
+# Parallelisiert über mehrere Dateien:
+n_cores <- max(1, parallel::detectCores() - 1)
+start_time <- Sys.time()
+pblapply(tif_files, texture_cal, window_size = 3, n_levels = 128, cl = n_cores)
+end_time <- Sys.time()
+cat(sprintf("Processing time: %s\n", difftime(end_time, start_time, units = "mins")))
 
 # nutzt alle Kerne außer 1
 n_cores <- max(1, detectCores() - 1)
-pblapply(tif_files, FUN = process_file, cl = n_cores, window_size = 3)
+pblapply(tif_files, FUN = process_file, cl = n_cores, window_size = window_size)
+
+rast <- rast(tif_files[1])
+hist(as.vector(rast), breaks = 64)
+hist(data$VH, breaks = 64)
+hist(data$VV, breaks = 64)
