@@ -223,3 +223,27 @@ for (date in dates) {
 }
 cor(data$RVI, data$Ratio, method = "pearson", use = "complete.obs")
 str(data_sub)
+
+## Boxplots erstellen
+### Boxplots aller Variablen über alle Zeitpunkte
+variables <- names(data)[-c(1,2,3)]
+# reihenfolge nach cohens d
+variables <- as.array(read.csv(r"(Data\tables\cohens_d_overall.csv)")$variable)
+p_list <- list()
+for (name in variables){
+  p_list[[paste0("p", name)]] <- ggplot(data, aes(x = as.factor(class), y = !!sym(name), fill = as.factor(class))) +
+                              geom_boxplot() +
+                              labs(title = paste("Boxplot of", name),
+                                  x = "Class",
+                                  y = name,
+                                  fill = "Class") +
+                              theme_minimal() +
+                              scale_fill_manual(values = c("3" = "green", "1" = "red", "2" = "orange"),
+                                                labels = c("3" = "Vegetation", "1" = "Soil", "2" = "Residue")
+  )
+}
+#combined <- ggarrange(!!!p_list, ncol = 4, nrow = ceiling(length(p_list)/4))
+combined <- do.call(ggarrange, c(p_list, list(ncol = 6, nrow = ceiling(length(p_list)/6))))
+
+final_plot <- annotate_figure(combined, top = paste("Boxplots for all variables over all dates by Class"))
+print(final_plot)
