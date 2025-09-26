@@ -1,10 +1,10 @@
 # calculate statistics for extracted values
-packages <- c("lsr")
+packages <- c("lsr", "openxlsx")
 for (pkg in packages) {
   if (!require(pkg, character.only = TRUE)) {
     install.packages(pkg)  # Paket installieren
     library(pkg, character.only = TRUE)  # Paket laden
-}
+  }
 }
 
 # Daten laden
@@ -40,17 +40,17 @@ for (date in dates) {
     )
   }
 }
-    write.csv(cohens_D, paste0("Data/tables/cohens_d_per_date.csv"), row.names = FALSE)
-    View(cohens_D)
+write.csv(cohens_D, paste0("Data/tables/cohens_d_per_date.csv"), row.names = FALSE)
+
 ## über alle Zeitpunkte
-  cohens_D <- data.frame(
-    variable = character(),
-    soil_res = numeric(),
-    soil_veg = numeric(),
-    soil_other = numeric(),
-    res_veg = numeric(),
-    stringsAsFactors = FALSE
-  )
+cohens_D <- data.frame(
+  variable = character(),
+  soil_res = numeric(),
+  soil_veg = numeric(),
+  soil_other = numeric(),
+  res_veg = numeric(),
+  stringsAsFactors = FALSE
+)
 
 for (var in variables) {
   soil_res <- cohensD(data[[var]][data$class == 1], data[[var]][data$class == 2])
@@ -61,15 +61,10 @@ for (var in variables) {
 }
 cohens_D <- arrange(cohens_D, desc(soil_other))
 write.csv(cohens_D, paste0("Data/tables/cohens_d_overall.csv"), row.names = FALSE)
-View(cohens_D)
+write.xlsx(cohens_D, paste0("Data/tables/cohens_d_overall.xlsx"), rowNames = FALSE)
+
+stop("manuelle auswahl der besten Variablen notwendig")
 ## best optical: NBR2, B8A, MSAVI8A, MSAVI2, BSI8A
 ## best SAR: RVI_buff, VH_mean, VH_variance
-
-## cormatrix
-cor <- cor(data[,c("RVI_buff", "VH_mean", "VH_buff", "VH_variance", "VH_dissimilarity")], method = "pearson", use = "complete.obs")
-cor <- cor(data[variables], method = "pearson", use = "complete.obs")
-# plot
-corrplot::corrplot(cor, method = "number", type = "full", tl.col = "black", tl.srt = 45)
-str(cor)
-names(data)
-head(data)
+best_vars <- c("NBR2", "B8A", "MSAVI8A", "MSAVI2", "BSI8A", "RVI_buff", "VH_mean", "VH_variance")
+writeLines(best_vars, "Data/tables/best_CohensD_performing_variables.txt")
