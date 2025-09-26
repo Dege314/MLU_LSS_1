@@ -41,7 +41,7 @@ flowchart TD
         BE["VH & VV buffer value extraction"]
         PE["Pixel value etraction"]
         BE --> IC["calculate Indizes"]
-        IC --> CD["CohensD difference analysis per variable"]
+        IC --> CD["CohensD difference analysis per variable (Bands & Indices)"]
         PE --> IC
         CD --> BV["Choose best differencing <br> optical and SAR Variables"]
         BV --> RF1["Random-Forest of all possible <br> variable cominations"]
