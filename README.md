@@ -22,6 +22,7 @@ flowchart TD
         LDB --> 1SUB["Subset"]
         1SUB --> 1MSC["Mosaic"]
         1MSC --> Mean["Averaging of two <br> closest products"]
+        Mean --> TP["calcuate texture parameters"]
         1SUB --> Mean
     end
 
@@ -37,16 +38,31 @@ flowchart TD
     %% Analyse Subgraph
     subgraph Classification[" "]
         direction TB
-       RF["Random-Forest"]
+        BE["VH & VV buffer value extraction"]
+        PE["Pixel value etraction"]
+        BE --> CD["CohensD difference analysis per variable"]
+        PE --> CD
+        CD --> BV["Choose best differencing <br> optical and SAR Variables"]
+        BV --> RF1["Random-Forest of all possible <br> variable cominations"]
+        RF1 --> SB["select best variable combinations"]
+        SB --> Optical["Optical"]
+        SB --> SAR["SAR"]
+        SB --> Mixed["Mixed"]
+        Optical --> RF2["Random-Forest classification for each time-point"]
+        SAR --> RF2
+        Mixed -->RF2
+
+        
     end
 
     %% Verbindungen zwischen Subgraphs
-        Mean --> RF
-        2MSC --> RF
+        TP --> PE
+        2MSC --> PE
+        TP --> BE
 
     %% Stil- und Layoutoptimierungen
     classDef box fill:#f9f9f9,stroke:#333,stroke-width:1px,font-size:10px
     classDef subgraph_style fill:#eeeeee,stroke:#666,stroke-width:2px,font-size:15px, padding:10
-    class AOF,TNR,BNR,Cal,SPK,TCR,LDB,1SUB,1MSC,Mean,2SUB,CLM,RF,1MSC,2MSC,App box
+    class AOF,TNR,BNR,Cal,SPK,TCR,LDB,1SUB,1MSC,Mean,TP,2SUB,CLM,BE,PE,CD,BV,RF1,RF2,SB,1MSC,2MSC,Optical,SAR,Mixed,App box
     class Sentinel1,Sentinel2,Classification,Title,Title2,RF subgraph_style
 ```
