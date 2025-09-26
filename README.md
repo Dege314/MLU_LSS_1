@@ -40,8 +40,9 @@ flowchart TD
         direction TB
         BE["VH & VV buffer value extraction"]
         PE["Pixel value etraction"]
-        BE --> CD["CohensD difference analysis per variable"]
-        PE --> CD
+        BE --> IC["calculate Indizes"]
+        IC --> CD["CohensD difference analysis per variable"]
+        PE --> IC
         CD --> BV["Choose best differencing <br> optical and SAR Variables"]
         BV --> RF1["Random-Forest of all possible <br> variable cominations"]
         RF1 --> SB["select best variable combinations"]
@@ -63,6 +64,6 @@ flowchart TD
     %% Stil- und Layoutoptimierungen
     classDef box fill:#f9f9f9,stroke:#333,stroke-width:1px,font-size:10px
     classDef subgraph_style fill:#eeeeee,stroke:#666,stroke-width:2px,font-size:15px, padding:10
-    class AOF,TNR,BNR,Cal,SPK,TCR,LDB,1SUB,1MSC,Mean,TP,2SUB,CLM,BE,PE,CD,BV,RF1,RF2,SB,1MSC,2MSC,Optical,SAR,Mixed,App box
+    class AOF,TNR,BNR,Cal,SPK,TCR,LDB,1SUB,1MSC,Mean,TP,2SUB,CLM,BE,PE,CD,BV,RF1,RF2,SB,1MSC,IC,2MSC,Optical,SAR,Mixed,App box
     class Sentinel1,Sentinel2,Classification,Title,Title2,RF subgraph_style
 ```
