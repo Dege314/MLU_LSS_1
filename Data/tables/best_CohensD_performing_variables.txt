@@ -1,0 +1,8 @@
+NBR2
+B8A
+MSAVI8A
+MSAVI2
+BSI8A
+RVI_buff
+VH_mean
+VH_variance
