@@ -1,4 +1,4 @@
-packages <- c("tidyr", "terra")
+packages <- c("tidyr", "terra", "dplyr", "openxlsx")
 for (pkg in packages) {
   if (!require(pkg, character.only = TRUE)) {
     install.packages(pkg)  # Paket installieren
@@ -27,13 +27,24 @@ for (i in seq_along(S2_files)) {
   values <- terra::extract(rast(S2_files[i]), ref_data[ref_data$date == date, ], na.rm = TRUE, bind = TRUE)
 
   S2_values <- rbind(S2_values, values)
-  val_points <- rbind(val_points, data.frame(date = date, points = nrow(values[which(!is.na(values$B02)), ])))
+  val_points <- rbind(
+    val_points,
+    data.frame(
+      date = date,
+      points = nrow(values[which(!is.na(values$B02)), ]),
+      soil = nrow(values[which(!is.na(values$B02) & values$class == 1), ]),
+      residue = nrow(values[which(!is.na(values$B02) & values$class == 2), ]),
+      vegetation = nrow(values[which(!is.na(values$B02) & values$class == 3), ])
+    )
+  )
   if (i == length(S2_files)) {
     cat("\rSentinel-2 Value extraction finished!                                                        \n")
   }
 }
 # save val_points
+val_points$res_veg <- val_points$residue + val_points$vegetation
 write.csv(val_points, "data/tables/S2_points_count_per_date.csv", row.names = FALSE)
+write.xlsx(val_points, "data/tables/S2_points_count_per_date.xlsx", rowNames = FALSE)
 View(val_points)
 # extracted_values
 ref_buf <- terra::buffer(ref_data, width = 50)
@@ -71,6 +82,7 @@ writeVector(extracted_values, "Data/tables/extracted_values.gpkg", overwrite = T
 write.csv(as.data.frame(extracted_values), "Data/tables/extracted_values.csv", row.names = FALSE)
 
 # update metadata
+extracted_values <- read.csv("Data/tables/extracted_values.csv", header = TRUE, stringsAsFactors = FALSE)
 # wie viele Punkte pro Bodentyp
 count <- as.data.frame(extracted_values) %>%
   group_by(BODTYP_K) %>%
@@ -79,3 +91,8 @@ count <- as.data.frame(extracted_values) %>%
 soiltypes_aggr <- read.csv("data/tables/soiltypes_aggregated.csv")
 soiltypes_aggr <- merge(soiltypes_aggr, count, by = "BODTYP_K", all.x = TRUE)
 write.csv(soiltypes_aggr, "data/tables/soiltypes_aggregated.csv", row.names = FALSE)
+View(soiltypes_aggr)
+View(extracted_values)
+
+points <- read.csv("data/tables/S2_points_count_per_date.csv", header = TRUE, stringsAsFactors = FALSE)
+View(points)
