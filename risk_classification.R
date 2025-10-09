@@ -29,7 +29,7 @@ for (i in 1:length(S1_files)) {
   raster$VH_buff <- focal(raster$VH, w=w, fun=mean, na.rm=TRUE)
   raster$VV_buff <- focal(raster$VV, w=w, fun=mean, na.rm=TRUE)
   raster$RVI_buff <- (4 * raster$VH_buff) / (raster$VH_buff + raster$VV_buff)
-  writeRaster(raster[[c("RVI_buff", "VH_mean")]], filename=paste0("Data/S1/pro/mosaic/mean/texture/buff/", name), format="GTiff", overwrite=TRUE)
+  writeRaster(raster[[c("RVI_buff", "VH_mean")]], filename=paste0("Data/S1/pro/mosaic/mean/texture/buff/", name), overwrite=TRUE)
   if (i == length(S1_files)) {
     sub_end_time <- Sys.time()
     cat(sprintf("\rfocal mean calculation finished! Total processing time: %s\n", difftime(sub_end_time, sub_start_time, units = "mins")))

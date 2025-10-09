@@ -26,13 +26,6 @@ counts_table <- counts_table %>%
 
 # Summen berechnen
 counts_table$total <- rowSums(counts_table[ , -1], na.rm = TRUE)
-col_sums <- colSums(counts_table[ , -1], na.rm = TRUE)
-
-# Erstelle eine neue Datenzeile mit den Summen der Spalten
-total_row <- c(class = "Summe", as.list(colSums(counts_table[ , -1], na.rm = TRUE)))
-
-# Füge sie an counts_table an (umwandeln in Data Frame mit einem Row-Bind)
-counts_table <- rbind(counts_table, total_row)
 
 write.csv(counts_table, "data/tables/ref_data_counts.csv", row.names = FALSE)
 write.xlsx(counts_table, "data/tables/ref_data_counts.xlsx", rowNames = FALSE)
