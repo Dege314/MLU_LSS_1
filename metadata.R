@@ -9,6 +9,7 @@ ref_data <- terra::vect("data/ref_data.gpkg") %>% project("EPSG:32632") # <- crs
 soil_data <- terra::vect("Data/vector/vbk/vbk50_2009_salza_fixed.shp") %>% project("EPSG:32632") # <- crs der Sentinel-2 Daten
 soil_data <- soil_data[, "BODTYP_K"]
 
+plot(soil_data)
 # Bodentypen extrahieren und zusammenfassen
 ref_data <- terra::intersect(ref_data, soil_data[, "BODTYP_K"])
 # Bodentypen mit weniger als 150 Vorkommen zu "Other" zusammenfassen
