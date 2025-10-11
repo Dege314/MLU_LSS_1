@@ -84,7 +84,7 @@ write.csv(as.data.frame(extracted_values), "Data/tables/extracted_values.csv", r
 # update metadata
 extracted_values <- read.csv("Data/tables/extracted_values.csv", header = TRUE, stringsAsFactors = FALSE)
 # wie viele Punkte pro Bodentyp
-count <- as.data.frame(extracted_values) %>%
+count <- as.data.frame(extracted_values)[complete.cases(extracted_values), ] %>%
   group_by(BODTYP_K) %>%
   summarise(aftr_masking = n()) %>%
   arrange(desc(aftr_masking))

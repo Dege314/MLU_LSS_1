@@ -117,38 +117,38 @@ for (i in 1:length(unique_dates)) {
 }
 
 # actuallise tif_files
-tif_files <- list.files("Data/S2/pro/mosaic", pattern = "\\.tif$", full.names = TRUE)
-#tif_files <- tif_files[1]
-names(rast(tif_files[1]))
-# RGB Plotten
-for (i in seq_along(tif_files)) {
-  cat(sprintf("\rPlotting - Fortschritt: %d von %d (%s)", i, length(tif_files), basename(tif_files[i])))
+# tif_files <- list.files("Data/S2/pro/mosaic", pattern = "\\.tif$", full.names = TRUE)
+# #tif_files <- tif_files[1]
+# names(rast(tif_files[1]))
+# # RGB Plotten
+# for (i in seq_along(tif_files)) {
+#   cat(sprintf("\rPlotting - Fortschritt: %d von %d (%s)", i, length(tif_files), basename(tif_files[i])))
 
-  img <- rast(tif_files[i])
+#   img <- rast(tif_files[i])
 
-  # als PNG speichern
-  png(width = ncol(img), height = nrow(img), file = paste0("Data/plots/", str_sub(basename(tif_files[i]), end = -11), "plot.png"), units = "px", res = 300)
-  plotRGB(img, r = 3, g = 2, b = 1, stretch = "lin")
-  dev.off()
+#   # als PNG speichern
+#   png(width = ncol(img), height = nrow(img), file = paste0("Data/plots/", str_sub(basename(tif_files[i]), end = -11), "plot.png"), units = "px", res = 300)
+#   plotRGB(img, r = 3, g = 2, b = 1, stretch = "lin")
+#   dev.off()
 
-  if (i == length(tif_files)) {
-    cat("\rPlotting finished!                                                      \n")
-  }
-}
-extracted_values <- vect()
+#   if (i == length(tif_files)) {
+#     cat("\rPlotting finished!                                                      \n")
+#   }
+# }
+# extracted_values <- vect()
 
-# Werte extrahieren
-for (i in seq_along(tif_files)) {
-  cat(sprintf("\rExtracting values - Fortschritt: %d von %d (%s)", i, length(tif_files), basename(tif_files[i])))
-  date <- format(as.Date(substr(basename(tif_files[i]), 12, 19), format = "%Y%m%d"), "%Y-%m")
-  values <- terra::extract(rast(tif_files[i]), ref_data[ref_data$date == date, ], na.rm = TRUE, bind = TRUE)
+# # Werte extrahieren
+# for (i in seq_along(tif_files)) {
+#   cat(sprintf("\rExtracting values - Fortschritt: %d von %d (%s)", i, length(tif_files), basename(tif_files[i])))
+#   date <- format(as.Date(substr(basename(tif_files[i]), 12, 19), format = "%Y%m%d"), "%Y-%m")
+#   values <- terra::extract(rast(tif_files[i]), ref_data[ref_data$date == date, ], na.rm = TRUE, bind = TRUE)
 
-  extracted_values <- rbind(extracted_values, values)
+#   extracted_values <- rbind(extracted_values, values)
 
-  if (i == length(tif_files)) {
-    cat("\rValue extraction finished!                                                        \n")
-  }
-}
+#   if (i == length(tif_files)) {
+#     cat("\rValue extraction finished!                                                        \n")
+#   }
+# }
 
-end_time <- Sys.time()
-cat(sprintf("Total processing time: %s\n", difftime(end_time, start_time, units = "mins")))
+# end_time <- Sys.time()
+# cat(sprintf("Total processing time: %s\n", difftime(end_time, start_time, units = "mins")))
