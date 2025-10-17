@@ -22,7 +22,8 @@ flowchart TD
         LDB --> 1SUB["Subset"]
         1SUB --> 1MSC["Mosaic"]
         1MSC --> Mean["Averaging of two <br> closest products"]
-        Mean --> TP["calcuate texture parameters"]
+        Mean --> BE["calculate aditional <br> VH & VV buffer Layer"]
+        BE --> TP["calcuate texture parameters"]
         1SUB --> Mean
     end
 
@@ -38,18 +39,15 @@ flowchart TD
     %% Analyse Subgraph
     subgraph Classification[" "]
         direction TB
-        BE["VH & VV buffer value extraction"]
+        
         PE["Pixel value etraction"]
-        BE --> IC["calculate Indizes"]
-        IC --> CD["CohensD difference analysis per variable (Bands & Indices)"]
-        PE --> IC
-        CD --> BV["Choose best differencing <br> optical and SAR Variables"]
+        PE --> BV["Choose best differencing <br> optical and SAR Variables <br> based on Cohens D"]
         BV --> RF1["Random-Forest of all possible <br> variable cominations"]
         RF1 --> SB["select best variable combinations"]
         SB --> Optical["Optical"]
         SB --> SAR["SAR"]
         SB --> Mixed["Mixed"]
-        Optical --> RF2["Random-Forest classification for each time-point"]
+        Optical --> RF2["Random-Forest classification <br> for each time-point"]
         SAR --> RF2
         Mixed -->RF2
 
@@ -59,7 +57,6 @@ flowchart TD
     %% Verbindungen zwischen Subgraphs
         TP --> PE
         2MSC --> PE
-        TP --> BE
 
     %% Stil- und Layoutoptimierungen
     classDef box fill:#f9f9f9,stroke:#333,stroke-width:1px,font-size:10px
