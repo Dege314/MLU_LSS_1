@@ -1,4 +1,4 @@
-### Dokumentation of project "-" code and data
+### Dokumentation of the project "Identifikation von Brachflächen im Einzugsgebiet der Salza durch eine Kombination von Sentinel-1- und Sentinel-2 Fernerkundungsdaten mittels Random Forest als Beitrag zur Analyse der Bodenerosionsgefährdung durch Wasser"
 
 ## Workflow
 
